@@ -22,7 +22,10 @@ target_include_directories(lwIP-integration PUBLIC
 target_link_libraries(lwIP-integration PUBLIC
 		distortos::distortos)
 
-target_link_libraries(lwipcore PUBLIC
-		lwIP-integration)
 target_link_libraries(lwipallapps PUBLIC
 		lwIP-integration)
+add_library(lwIP::all-applications ALIAS lwipallapps)
+
+target_link_libraries(lwipcore PUBLIC
+		lwIP-integration)
+add_library(lwIP::core ALIAS lwipcore)
