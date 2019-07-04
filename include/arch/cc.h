@@ -12,18 +12,6 @@
 #ifndef LWIP_INTEGRATION_INCLUDE_ARCH_CC_H_
 #define LWIP_INTEGRATION_INCLUDE_ARCH_CC_H_
 
-#define _GNU_SOURCE
-
-#include "distortos/board/standardOutputStream.h"
-
-#ifndef NDEBUG
-
-#include "distortos/FATAL_ERROR.h"
-
-#endif	/* ndef NDEBUG */
-
-#include <stdlib.h>
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -42,37 +30,6 @@ extern "C"
 #define LWIP_NOASSERT							1
 
 #endif	/* def NDEBUG */
-
-#ifndef NDEBUG
-
-/**
- * \brief Handler for failed assertion in lwIP
- *
- * \param [in] message is the assertion's message
- */
-
-#define LWIP_PLATFORM_ASSERT(message)			FATAL_ERROR("lwIP assertion \"" message "\" failed")
-
-#endif	/* ndef NDEBUG */
-
-/**
- * \brief Implementation of LWIP_PLATFORM_DIAG()
- *
- * \param [in] __VA_ARGS__ is the format string and all required arguments
- */
-
-#define LWIP_PLATFORM_DIAG_IMPLEMENTATION(...)	fiprintf(standardOutputStream, __VA_ARGS__)
-
-/**
- * \brief Prints lwIP's diagnostic message.
- *
- * \param [in] message is the format string and all required arguments, enclosed in parentheses
- */
-
-#define LWIP_PLATFORM_DIAG(message)				LWIP_PLATFORM_DIAG_IMPLEMENTATION message
-
-/** rand()-like function for lwIP */
-#define LWIP_RAND()								rand()
 
 /** lwIP should use standard `struct timeval` */
 #define LWIP_TIMEVAL_PRIVATE					0
