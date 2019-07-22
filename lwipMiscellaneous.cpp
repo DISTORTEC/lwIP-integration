@@ -14,6 +14,8 @@
 #include "distortos/DynamicThread.hpp"
 #include "distortos/ThreadIdentifier.hpp"
 
+#include <cstring>
+
 static_assert(sizeof(sys_thread_t) == sizeof(distortos::ThreadIdentifier) &&
 		alignof(sys_thread_t) == alignof(distortos::ThreadIdentifier),
 		"sys_thread_t doesn't match distortos::ThreadIdentifier!");
@@ -35,5 +37,7 @@ sys_thread_t sys_thread_new(const char*, const lwip_thread_fn function, void* co
 	const auto identifier = thread.getIdentifier();
 	const auto ret = thread.detach();
 	assert(ret == 0);
-	return *reinterpret_cast<const sys_thread_t*>(&identifier);
+	sys_thread_t convertedIdentifier;
+	memcpy(&convertedIdentifier, &identifier, sizeof(convertedIdentifier));
+	return convertedIdentifier;
 }
