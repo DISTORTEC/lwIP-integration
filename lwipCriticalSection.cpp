@@ -32,8 +32,9 @@ sys_prot_t sys_arch_protect()
 	return protectionLevel;
 }
 
-void sys_arch_unprotect(const sys_prot_t value)
+void sys_arch_unprotect(const sys_prot_t protectionLevel)
 {
-	const auto interruptMask = *reinterpret_cast<const distortos::architecture::InterruptMask*>(&value);
+	distortos::architecture::InterruptMask interruptMask;
+	memcpy(&interruptMask, &protectionLevel, sizeof(interruptMask));
 	distortos::architecture::restoreInterruptMasking(interruptMask);
 }
