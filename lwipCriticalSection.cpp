@@ -14,7 +14,7 @@
 #include "distortos/architecture/enableInterruptMasking.hpp"
 #include "distortos/architecture/restoreInterruptMasking.hpp"
 
-// #include <cstring>
+#include <cstring>
 
 static_assert(sizeof(sys_prot_t) == sizeof(distortos::architecture::InterruptMask) &&
 		alignof(sys_prot_t) == alignof(distortos::architecture::InterruptMask),
@@ -27,7 +27,9 @@ static_assert(sizeof(sys_prot_t) == sizeof(distortos::architecture::InterruptMas
 sys_prot_t sys_arch_protect()
 {
 	const auto interruptMask = distortos::architecture::enableInterruptMasking();
-	return *reinterpret_cast<const sys_prot_t*>(&interruptMask);
+	sys_prot_t protectionLevel;
+	memcpy(&protectionLevel, &interruptMask, sizeof(protectionLevel));
+	return protectionLevel;
 }
 
 void sys_arch_unprotect(const sys_prot_t value)
