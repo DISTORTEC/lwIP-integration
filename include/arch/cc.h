@@ -12,6 +12,8 @@
 #ifndef LWIP_INTEGRATION_INCLUDE_ARCH_CC_H_
 #define LWIP_INTEGRATION_INCLUDE_ARCH_CC_H_
 
+#include <sys/time.h>
+
 #ifdef __cplusplus
 extern "C"
 {
