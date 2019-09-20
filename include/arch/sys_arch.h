@@ -41,7 +41,7 @@ struct distortos_ThreadIdentifier
 /** lwIP mailbox */
 typedef struct distortos_DynamicRawFifoQueue sys_mbox_t;
 
-/** lwIP mutext */
+/** lwIP mutex */
 typedef struct distortos_Mutex sys_mutex_t;
 
 /** lwIP lightweight protection level */
