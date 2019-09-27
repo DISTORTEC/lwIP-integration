@@ -14,6 +14,8 @@
 
 #include <sys/time.h>
 
+#include <fcntl.h>
+
 #ifdef __cplusplus
 extern "C"
 {
