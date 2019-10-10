@@ -19,7 +19,8 @@ add_library(lwIP-integration STATIC
 		${CMAKE_CURRENT_LIST_DIR}/lwipTime.cpp)
 target_include_directories(lwIP-integration PUBLIC
 		${CMAKE_CURRENT_LIST_DIR}/include
-		${LWIP_INCLUDE_DIRS})
+		${LWIP_INCLUDE_DIRS}
+		${LWIP_DIR}/src/include/compat/posix)
 target_link_libraries(lwIP-integration PUBLIC
 		distortos::distortos)
 
