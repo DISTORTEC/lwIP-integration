@@ -82,8 +82,7 @@ extern "C" int fs_open_custom(fs_file* const fileStruct, const char* const name)
 	memset(fileStruct, 0, sizeof(*fileStruct));
 
 	fileStruct->len = result.second;
-	fileStruct->flags = FS_FILE_FLAGS_HEADER_INCLUDED | FS_FILE_FLAGS_HEADER_PERSISTENT |
-			FS_FILE_FLAGS_HEADER_HTTPVER_1_1;
+	fileStruct->flags = FS_FILE_FLAGS_HEADER_PERSISTENT | FS_FILE_FLAGS_HEADER_HTTPVER_1_1;
 	fileStruct->pextension = file.release();
 
 	return 1;
