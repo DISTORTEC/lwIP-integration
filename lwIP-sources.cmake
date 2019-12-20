@@ -31,3 +31,12 @@ add_library(lwIP::all-applications ALIAS lwipallapps)
 target_link_libraries(lwipcore PUBLIC
 		lwIP-integration)
 add_library(lwIP::core ALIAS lwipcore)
+
+if(TARGET mbedtls)
+	target_link_libraries(lwipmbedtls PUBLIC
+			lwIP-integration
+			mbedtls)
+
+	target_link_libraries(lwipcore PUBLIC
+			lwipmbedtls)
+endif()
