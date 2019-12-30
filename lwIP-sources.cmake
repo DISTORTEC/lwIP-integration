@@ -31,6 +31,8 @@ target_link_libraries(lwipcore PUBLIC
 		lwIP-integration)
 
 if(TARGET mbedtls)
+	target_compile_options(lwipmbedtls PRIVATE
+			-Wno-sign-compare)
 	target_link_libraries(lwipmbedtls PUBLIC
 			lwIP-integration
 			mbedtls)
