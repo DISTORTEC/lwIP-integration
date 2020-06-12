@@ -3,6 +3,7 @@
  * \brief Definitions of lwIP functions related to file system integration for http server
  *
  * \author Copyright (C) 2019 Aleksander Szczygiel
+ * \author Copyright (C) 2020 Kamil Szczygiel http://www.distortec.com http://www.freddiechopin.info
  *
  * \par License
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
@@ -13,15 +14,11 @@
 
 #include "lwip/apps/fs.h"
 
-#include "distortos/FileSystem/FileSystem.hpp"
-#include "distortos/FileSystem/openFile.hpp"
-
 #include "distortos/assert.h"
 
-#include <tuple>
+#include "estd/ScopeGuard.hpp"
 
 #include <cstring>
-#include <fcntl.h>
 
 namespace
 {
@@ -29,9 +26,6 @@ namespace
 /*---------------------------------------------------------------------------------------------------------------------+
 | local objects
 +---------------------------------------------------------------------------------------------------------------------*/
-
-/// pointer to file system object
-distortos::FileSystem* httpServerFileSystem {};
 
 /// path to root directory of http server
 const char* httpServerRootDirectory {};
@@ -42,49 +36,59 @@ const char* httpServerRootDirectory {};
 | global functions
 +---------------------------------------------------------------------------------------------------------------------*/
 
-void lwipHttpServerFsConfigure(distortos::FileSystem& fileSystem, const char* rootDirectory)
+void lwipHttpServerFsConfigure(const char* rootDirectory)
 {
-	LOCK_TCPIP_CORE();
-
-	httpServerFileSystem = &fileSystem;
 	httpServerRootDirectory = rootDirectory != nullptr ? rootDirectory : "";
-
-	UNLOCK_TCPIP_CORE();
 }
 
 extern "C" int fs_open_custom(fs_file* const fileStruct, const char* const name)
 {
-	assert(httpServerFileSystem != nullptr);
+	assert(fileStruct != nullptr);
 	assert(httpServerRootDirectory != nullptr);
 
-	char fullPath[NAME_MAX + 1];
+	FILE* file;
 	{
+		char fullPath[256];
 		const auto ret = sniprintf(fullPath, sizeof(fullPath), "%s%s", httpServerRootDirectory, name);
 		if (ret < 0)
-			return 0;
+			return {};
 		if (static_cast<unsigned int>(ret) >= sizeof(fullPath))
-			return 0;
+			return {};
+
+		file = fopen(fullPath, "r");
+		if (file == nullptr)
+			return {};
 	}
 
-	int ret;
-	std::unique_ptr<distortos::File> file;
-	std::tie(ret, file) = httpServerFileSystem->openFile(fullPath, O_RDONLY);
-	if (ret != 0)
-		return 0;
-
-	const auto result = file->getSize();
-	if (result.first != 0)
-	{
-		file->close();
-		return 0;
-	}
+	auto closeScopeGuard = estd::makeScopeGuard(
+			[file]()
+			{
+				fclose(file);
+			});
 
 	memset(fileStruct, 0, sizeof(*fileStruct));
 
-	fileStruct->len = result.second;
-	fileStruct->flags = FS_FILE_FLAGS_HEADER_PERSISTENT | FS_FILE_FLAGS_HEADER_HTTPVER_1_1;
-	fileStruct->pextension = file.release();
+	{
+		const auto ret = fseek(file, 0, SEEK_END);
+		if (ret != 0)
+			return {};
+	}
+	{
+		const auto ret = ftell(file);
+		if (ret == -1)
+			return {};
 
+		fileStruct->len = ret;
+	}
+	{
+		const auto ret = fseek(file, 0, SEEK_SET);
+		if (ret != 0)
+			return {};
+	}
+
+	fileStruct->flags = FS_FILE_FLAGS_HEADER_PERSISTENT | FS_FILE_FLAGS_HEADER_HTTPVER_1_1;
+	fileStruct->pextension = file;
+	closeScopeGuard.release();
 	return 1;
 }
 
@@ -93,10 +97,8 @@ extern "C" void fs_close_custom(fs_file* const fileStruct)
 	if (fileStruct == nullptr || fileStruct->pextension == nullptr)
 		return;
 
-	const auto file = static_cast<distortos::File*>(fileStruct->pextension);
-	file->close();
-	delete file;
-	fileStruct->pextension = nullptr;
+	fclose(static_cast<FILE*>(fileStruct->pextension));
+	fileStruct->pextension = {};
 }
 
 extern "C" int fs_read_custom(fs_file* const fileStruct, char* const buffer, const int count)
@@ -105,8 +107,7 @@ extern "C" int fs_read_custom(fs_file* const fileStruct, char* const buffer, con
 	assert(fileStruct->pextension != nullptr);
 	assert(buffer != nullptr);
 
-	const auto ret = static_cast<distortos::File*>(fileStruct->pextension)->read(buffer, count);
-	fileStruct->index += ret.second;
-
-	return ret.second;
+	const auto bytesRead = fread(buffer, 1, count, static_cast<FILE*>(fileStruct->pextension));
+	fileStruct->index += bytesRead;
+	return bytesRead;
 }
