@@ -78,6 +78,8 @@ if(TARGET mbedtls)
 			lwIP-interface-library
 			mbedtls)
 
+	target_link_libraries(lwipallapps PUBLIC
+			lwipmbedtls)
 	target_link_libraries(lwipcore PUBLIC
 			lwipmbedtls)
 endif()
