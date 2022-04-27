@@ -3,7 +3,7 @@
  * \brief Definitions of lwIP functions related to file system integration for http server
  *
  * \author Copyright (C) 2019 Aleksander Szczygiel
- * \author Copyright (C) 2020 Kamil Szczygiel http://www.distortec.com http://www.freddiechopin.info
+ * \author Copyright (C) 2020-2022 Kamil Szczygiel http://www.distortec.com http://www.freddiechopin.info
  *
  * \par License
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
@@ -14,10 +14,9 @@
 
 #include "lwip/apps/fs.h"
 
-#include "distortos/assert.h"
-
 #include "estd/ScopeGuard.hpp"
 
+#include <cassert>
 #include <cstring>
 
 namespace
